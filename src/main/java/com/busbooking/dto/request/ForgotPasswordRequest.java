@@ -6,6 +6,9 @@ public class ForgotPasswordRequest {
 	
 	@NotBlank
 	 private String email;
+	
+	public ForgotPasswordRequest() {
+    }
 
 	    public String getEmail() {
 	        return email;

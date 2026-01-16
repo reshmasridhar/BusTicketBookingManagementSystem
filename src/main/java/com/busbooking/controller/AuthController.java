@@ -16,6 +16,7 @@ import com.busbooking.dto.request.ForgotPasswordRequest;
 import com.busbooking.dto.request.LoginRequest;
 import com.busbooking.dto.request.UserSignupRequest;
 import com.busbooking.dto.response.ForgotPasswordResponse;
+import com.busbooking.dto.response.GenericResponse;
 import com.busbooking.dto.response.LoginResponse;
 import com.busbooking.dto.response.UserSignupResponse;
 import com.busbooking.entity.User;
@@ -59,23 +60,26 @@ public class AuthController {
 	    public ResponseEntity<LoginResponse> login(
 	            @RequestBody LoginRequest request) {
 
-	        Optional<User> optionalUser =
-	                userService.findByEmail(request.getEmail());
+	        Optional<User> optionalUser = userService.findByEmail(request.getEmail());
 
-	        if (optionalUser.isEmpty()
-	                || !optionalUser.get().getPassword().equals(request.getPassword())) {
-
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	        if (optionalUser.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                    .body(new LoginResponse("Invalid email or password"));
 	        }
 
 	        User user = optionalUser.get();
 
-	        LoginResponse response = new LoginResponse();
-	        response.setMessage("Login successful");
-	        response.setRole(user.getRole().name());
+	        if (!user.getPassword().equals(request.getPassword())) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                    .body(new LoginResponse("Invalid email or password"));
+	        }
 
-	        return ResponseEntity.ok(response);
+	        return ResponseEntity.ok(
+	                new LoginResponse("Login successful", user.getRole().name())
+	        );
 	    }
+
+
 
 	    
 	    @PostMapping("/forgot-password")
