@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.busbooking.entity.User;
 import com.busbooking.enums.UserRole;
+import com.busbooking.exception.EmailAlreadyExistsException;
 import com.busbooking.repository.UserRepository;
 
 @Service
@@ -22,7 +23,7 @@ public class UserServiceImpl implements UserService{
 		Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
 
         if (existingUser.isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
 
         user.setCreatedAt(LocalDateTime.now());
