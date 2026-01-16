@@ -15,18 +15,19 @@ public class UserServiceImpl implements UserService{
 	
 	@Autowired
 	private UserRepository userRepository;
-	
 
 	@Override
-	public User registerUser(User user) throws Exception {
+	public User registerUser(User user) {
 		// TODO Auto-generated method stub
-		if(userRepository.existsByEmail(user.getEmail())) {
-            throw new Exception("Email already exists");
+		Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("Email already exists");
         }
 
-        user.setRole(UserRole.PASSENGER);
         user.setCreatedAt(LocalDateTime.now());
-        user.setCreatedBy(user.getEmail()); 
+        user.setCreatedBy(user.getEmail());
+
         return userRepository.save(user);
 	}
 
@@ -35,5 +36,12 @@ public class UserServiceImpl implements UserService{
 		// TODO Auto-generated method stub
 		return userRepository.findByEmail(email);
 	}
+
+	@Override
+	public void updateUser(User user) {
+		// TODO Auto-generated method stub
+        userRepository.save(user);
+	}
+	
 
 }

@@ -1,6 +1,5 @@
 package com.busbooking.entity;
 
-import java.time.LocalDateTime;
 
 import com.busbooking.enums.UserRole;
 
@@ -15,7 +14,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="users")
-public class User {
+public class User extends BaseAuditEntity{
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,12 +35,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
-
-    @Column(nullable = false)
-    private String createdBy;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
 
 	public Long getUserId() {
 		return userId;
@@ -90,22 +83,5 @@ public class User {
 	public void setRole(UserRole role) {
 		this.role = role;
 	}
-
-	public String getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
 	
-
 }

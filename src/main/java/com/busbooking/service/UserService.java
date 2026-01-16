@@ -6,7 +6,10 @@ import com.busbooking.entity.User;
 
 public interface UserService {
 	
-	User registerUser(User user) throws Exception;
+	User registerUser(User user);
+
     Optional<User> findByEmail(String email);
+
+    void updateUser(User user);
 
 }
