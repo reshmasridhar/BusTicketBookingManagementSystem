@@ -21,6 +21,7 @@ import com.busbooking.dto.response.LoginResponse;
 import com.busbooking.dto.response.UserSignupResponse;
 import com.busbooking.entity.User;
 import com.busbooking.enums.UserRole;
+import com.busbooking.exception.UserNotFoundException;
 import com.busbooking.service.UserService;
 
 @RestController
@@ -78,22 +79,15 @@ public class AuthController {
 	                new LoginResponse("Login successful", user.getRole().name())
 	        );
 	    }
-
-
-
 	    
 	    @PostMapping("/forgot-password")
 	    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
 	            @RequestBody ForgotPasswordRequest request) {
 
-	        Optional<User> optionalUser =
-	                userService.findByEmail(request.getEmail());
-
-	        if (optionalUser.isEmpty()) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-	        }
-
-	        User user = optionalUser.get();
+	        User user = userService.findByEmail(request.getEmail())
+	                .orElseThrow(() ->
+	                        new UserNotFoundException(
+	                                "User not found with email: " + request.getEmail()));
 
 	        String tempPassword = "TMP#" +
 	                UUID.randomUUID().toString().substring(0, 5);
@@ -106,10 +100,13 @@ public class AuthController {
 
 	        ForgotPasswordResponse response = new ForgotPasswordResponse();
 	        response.setMessage(
-	                "Temporary password generated and saved.Kindly change your password after login");
+	                "Temporary password generated successfully. Please reset your password after login");
 	        response.setTemporaryPassword(tempPassword);
 	        response.setUpdatedAt(user.getUpdatedAt());
 
 	        return ResponseEntity.ok(response);
 	    }
+
+
+	    
 }

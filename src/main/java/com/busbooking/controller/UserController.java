@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.busbooking.dto.request.ResetPasswordRequest;
 import com.busbooking.dto.response.GenericResponse;
 import com.busbooking.entity.User;
+import com.busbooking.exception.UserNotFoundException;
 import com.busbooking.service.UserService;
 
 @RestController
@@ -27,15 +28,10 @@ public class UserController {
     public ResponseEntity<GenericResponse> resetPassword(
             @RequestBody ResetPasswordRequest request) {
 
-        Optional<User> optionalUser =
-                userService.findByEmail(request.getEmail());
-
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new GenericResponse("User not found"));
-        }
-
-        User user = optionalUser.get();
+        User user = userService.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found with email: " + request.getEmail()));
 
         if (!user.getPassword().equals(request.getOldPassword())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -56,4 +52,6 @@ public class UserController {
                 )
         );
     }
+
+
 }
