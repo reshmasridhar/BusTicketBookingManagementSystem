@@ -14,4 +14,19 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             String destination,
             LocalDate journeyDate
     );
+    
+    List<Schedule> findBySourceAndDestination(
+            String source, String destination);
+
+    List<Schedule> findBySourceAndJourneyDate(
+            String source, LocalDate journeyDate);
+
+    List<Schedule> findByDestinationAndJourneyDate(
+            String destination, LocalDate journeyDate);
+
+    List<Schedule> findBySource(String source);
+
+    List<Schedule> findByDestination(String destination);
+
+    List<Schedule> findByJourneyDate(LocalDate journeyDate);
 }

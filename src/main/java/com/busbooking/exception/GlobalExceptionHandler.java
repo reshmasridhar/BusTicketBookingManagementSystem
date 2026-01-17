@@ -81,6 +81,23 @@ public class GlobalExceptionHandler {
 
 	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
+	
+	
+
+	@ExceptionHandler(ScheduleNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleScheduleNotFound(
+	        ScheduleNotFoundException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
 
 
 }
