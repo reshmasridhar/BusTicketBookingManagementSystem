@@ -1,0 +1,9 @@
+package com.busbooking.exception;
+
+public class BusNotFoundException extends RuntimeException {
+	
+	public BusNotFoundException(String message) {
+		super(message);
+	}
+
+}

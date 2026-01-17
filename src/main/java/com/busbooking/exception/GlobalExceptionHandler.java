@@ -50,5 +50,37 @@ public class GlobalExceptionHandler {
 	}
 
 
+	
+	@ExceptionHandler(BusNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleBusNotFound(
+	        BusNotFoundException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+
+	
+	@ExceptionHandler(SeatNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleSeatNotFound(
+	        SeatNotFoundException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+
 
 }
