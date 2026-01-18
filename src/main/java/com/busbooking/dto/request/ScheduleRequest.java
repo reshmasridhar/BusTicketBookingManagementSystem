@@ -3,13 +3,38 @@ package com.busbooking.dto.request;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import jakarta.validation.constraints.NotNull;
+
 public class ScheduleRequest {
-	private Long busId;
+	@NotNull
+    private Long busId;
+
+    @NotNull
+    private Long driverId;
+
+    @NotNull
     private String source;
+
+    @NotNull
     private String destination;
+
+    @NotNull
     private LocalDate journeyDate;
+
+    @NotNull
     private LocalTime departureTime;
+
+    @NotNull
     private LocalTime arrivalTime;
+    
+    
+    
+	public Long getDriverId() {
+		return driverId;
+	}
+	public void setDriverId(Long driverId) {
+		this.driverId = driverId;
+	}
 	public Long getBusId() {
 		return busId;
 	}

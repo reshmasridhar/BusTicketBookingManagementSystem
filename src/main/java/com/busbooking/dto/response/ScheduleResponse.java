@@ -7,6 +7,7 @@ import com.busbooking.enums.ScheduleStatus;
 
 public class ScheduleResponse {
 	private Long scheduleId;
+	private Long driverId;
     private Long busId;
     private String source;
     private String destination;
@@ -64,5 +65,12 @@ public class ScheduleResponse {
 	public void setStatus(ScheduleStatus status) {
 		this.status = status;
 	}
+	public Long getDriverId() {
+		return driverId;
+	}
+	public void setDriverId(Long driverId) {
+		this.driverId = driverId;
+	}
 
+	
 }

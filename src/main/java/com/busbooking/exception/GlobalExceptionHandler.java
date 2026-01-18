@@ -82,6 +82,22 @@ public class GlobalExceptionHandler {
 	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
 	
+	@ExceptionHandler(DriverNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleDriverNotFound(
+	        DriverNotFoundException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
+	
 	
 
 	@ExceptionHandler(ScheduleNotFoundException.class)
@@ -98,6 +114,52 @@ public class GlobalExceptionHandler {
 
 	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
+	
+	@ExceptionHandler(DriverAlreadyScheduledException.class)
+	public ResponseEntity<ErrorResponse> handleDriverAlreadyScheduled(
+	        DriverAlreadyScheduledException ex,
+	        HttpServletRequest request) {
 
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(BusAlreadyScheduledException.class)
+	public ResponseEntity<ErrorResponse> handleBusAlreadyScheduled(
+	        BusAlreadyScheduledException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(DriverAlreadyExistsException.class)
+	public ResponseEntity<ErrorResponse> handleDriverExists(
+	        DriverAlreadyExistsException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.CONFLICT.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+	}
+	
+	
 
 }

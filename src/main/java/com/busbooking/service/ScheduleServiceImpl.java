@@ -3,31 +3,36 @@ package com.busbooking.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.busbooking.dto.request.ScheduleRequest;
 import com.busbooking.dto.response.ScheduleResponse;
 import com.busbooking.entity.Bus;
+import com.busbooking.entity.Driver;
 import com.busbooking.entity.Schedule;
 import com.busbooking.enums.ScheduleStatus;
+import com.busbooking.exception.BusAlreadyScheduledException;
 import com.busbooking.exception.BusNotFoundException;
+import com.busbooking.exception.DriverAlreadyScheduledException;
+import com.busbooking.exception.DriverNotFoundException;
 import com.busbooking.exception.ScheduleNotFoundException;
 import com.busbooking.mapper.ScheduleMapper;
 import com.busbooking.repository.BusRepository;
+import com.busbooking.repository.DriverRepository;
 import com.busbooking.repository.ScheduleRepository;
-import com.busbooking.service.ScheduleService;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService {
 
-    private final ScheduleRepository scheduleRepository;
-    private final BusRepository busRepository;
+	@Autowired
+    private ScheduleRepository scheduleRepository;
 
-    public ScheduleServiceImpl(ScheduleRepository scheduleRepository,
-                               BusRepository busRepository) {
-        this.scheduleRepository = scheduleRepository;
-        this.busRepository = busRepository;
-    }
+    @Autowired
+    private BusRepository busRepository;
+
+    @Autowired
+    private DriverRepository driverRepository;
 
     // ================= CREATE =================
     @Override
@@ -35,14 +40,42 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         Bus bus = busRepository.findById(request.getBusId())
                 .orElseThrow(() ->
-                        new BusNotFoundException(
-                                "Bus not found with id: " + request.getBusId()));
+                        new BusNotFoundException("Bus not found"));
 
-        Schedule schedule = ScheduleMapper.toEntity(request, bus);
-        schedule.setStatus(ScheduleStatus.ACTIVE);
+        Driver driver = driverRepository.findById(request.getDriverId())
+                .orElseThrow(() ->
+                        new DriverNotFoundException("Driver not found"));
 
-        return ScheduleMapper.toResponse(
-                scheduleRepository.save(schedule));
+        boolean busConflict =
+                scheduleRepository.existsBusConflict(
+                        bus.getBusId(),
+                        request.getJourneyDate(),
+                        request.getDepartureTime(),
+                        request.getArrivalTime());
+
+        if (busConflict) {
+            throw new BusAlreadyScheduledException(
+                    "Bus is already scheduled for this time slot");
+        }
+
+        boolean driverConflict =
+                scheduleRepository.existsDriverConflict(
+                        driver.getDriverId(),
+                        request.getJourneyDate(),
+                        request.getDepartureTime(),
+                        request.getArrivalTime());
+
+        if (driverConflict) {
+            throw new DriverAlreadyScheduledException(
+                    "Driver is already assigned to another schedule at this time");
+        }
+
+        Schedule schedule =
+                ScheduleMapper.toEntity(request, bus, driver);
+
+        Schedule saved = scheduleRepository.save(schedule);
+
+        return ScheduleMapper.toResponse(saved);
     }
 
     // ================= GET ALL =================
