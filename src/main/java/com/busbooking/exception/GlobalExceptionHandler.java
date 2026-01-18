@@ -176,6 +176,37 @@ public class GlobalExceptionHandler {
 	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
 	
+	@ExceptionHandler(PaymentNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handlePaymentNotFound(
+	        PaymentNotFoundException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.NOT_FOUND.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(PaymentAlreadyExistsException.class)
+	public ResponseEntity<ErrorResponse> handlePaymentAlreadyExists(
+	        PaymentAlreadyExistsException ex,
+	        HttpServletRequest request) {
+
+		ErrorResponse error = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.BAD_REQUEST.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+	}
+
+	
 	
 
 }

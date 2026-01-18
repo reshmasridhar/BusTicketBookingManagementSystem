@@ -2,6 +2,7 @@ package com.busbooking.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,15 @@ public class BookingServiceImpl implements BookingService{
 
         booking.setStatus(BookingStatus.CANCELLED);
         return BookingMapper.toResponse(bookingRepository.save(booking));
+	}
+
+	@Override
+	public List<BookingResponse> getAllBookings() {
+		// TODO Auto-generated method stub
+		return bookingRepository.findAll()
+                .stream()
+                .map(BookingMapper::toResponse)
+                .collect(Collectors.toList());
 	}
 
 }

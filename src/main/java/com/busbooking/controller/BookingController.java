@@ -1,5 +1,7 @@
 package com.busbooking.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,5 +33,10 @@ public class BookingController {
     public ResponseEntity<BookingResponse> cancelBooking(
             @PathVariable Long bookingId) {
         return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<BookingResponse>> getAllBookings() {
+        return ResponseEntity.ok(bookingService.getAllBookings());
     }
 }
