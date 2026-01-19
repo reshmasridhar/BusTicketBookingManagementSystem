@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.busbooking.dto.response.BusResponse;
 import com.busbooking.dto.response.GenericResponse;
 import com.busbooking.entity.Bus;
 import com.busbooking.service.BusService;
@@ -28,25 +29,27 @@ public class BusController {
 
     // ADMIN
     @PostMapping
-    public ResponseEntity<Bus> addBus(@RequestBody Bus bus) {
+    public ResponseEntity<BusResponse> addBus(@RequestBody Bus bus) {
 
         bus.setCreatedBy("ADMIN");
         bus.setCreatedAt(LocalDateTime.now());
 
-        return new ResponseEntity<>(busService.addBus(bus), HttpStatus.CREATED);
+        BusResponse response = busService.addBus(bus);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // ADMIN
     @PutMapping("/{busId}")
-    public ResponseEntity<Bus> updateBus(
+    public ResponseEntity<BusResponse> updateBus(
             @PathVariable Long busId,
             @RequestBody Bus bus) {
 
         bus.setUpdatedBy("ADMIN");
 
-        return ResponseEntity.ok(
-                busService.updateBus(busId, bus)
-        );
+        BusResponse response = busService.updateBus(busId, bus);
+
+        return ResponseEntity.ok(response);
     }
 
     // ADMIN
@@ -55,23 +58,23 @@ public class BusController {
 
         busService.deleteBus(busId);
 
-        GenericResponse response =
-                new GenericResponse("Bus deleted successfully");
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new GenericResponse("Bus deleted successfully")
+        );
     }
 
 
     // USER
     @GetMapping
-    public ResponseEntity<List<Bus>> getAllBuses() {
+    public ResponseEntity<List<BusResponse>> getAllBuses() {
 
         return ResponseEntity.ok(busService.getAllBuses());
     }
 
     // USER
     @GetMapping("/{busId}")
-    public ResponseEntity<Bus> getBusById(@PathVariable Long busId) {
+    public ResponseEntity<BusResponse> getBusById(
+            @PathVariable Long busId) {
 
         return ResponseEntity.ok(busService.getBusById(busId));
     }

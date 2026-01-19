@@ -1,5 +1,6 @@
 package com.busbooking.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class DriverServiceImpl implements DriverService {
         driver.setLicenseNumber(request.getLicenseNumber());
         driver.setPhoneNumber(request.getPhoneNumber());
         driver.setStatus(DriverStatus.ACTIVE);
+        
+        driver.setCreatedAt(LocalDateTime.now());
+        driver.setCreatedBy("admin@bus.com");
 
         Driver saved = driverRepository.save(driver);
 
@@ -71,6 +75,8 @@ public class DriverServiceImpl implements DriverService {
         response.setLicenseNumber(driver.getLicenseNumber());
         response.setPhoneNumber(driver.getPhoneNumber());
         response.setStatus(driver.getStatus());
+        response.setUpdatedBy(driver.getUpdatedBy());
+        response.setUpdatedAt(driver.getUpdatedAt());
 
         return response;
     }
@@ -110,6 +116,9 @@ public class DriverServiceImpl implements DriverService {
         driver.setName(request.getName());
         driver.setLicenseNumber(request.getLicenseNumber());
         driver.setPhoneNumber(request.getPhoneNumber());
+        
+        driver.setUpdatedAt(LocalDateTime.now());
+        driver.setUpdatedBy("admin@bus.com");
 
         return mapToResponse(driverRepository.save(driver));
 	}

@@ -2,6 +2,8 @@ package com.busbooking.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 import com.busbooking.enums.DriverStatus;
 
 @Entity
@@ -23,6 +25,15 @@ public class Driver {
 
     @Enumerated(EnumType.STRING)
     private DriverStatus status;
+    
+    @Column(nullable = false)
+    private String createdBy;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    private String updatedBy;
+    private LocalDateTime updatedAt;
 
     // getters & setters
 
@@ -65,4 +76,37 @@ public class Driver {
     public void setStatus(DriverStatus status) {
         this.status = status;
     }
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+    
 }

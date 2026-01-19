@@ -7,52 +7,40 @@ import com.busbooking.enums.SeatType;
 public class SeatResponse {
 
    
-    private String message;
-    private Long seatId;
-    private String createdBy;
-    private LocalDateTime createdAt;
-    public SeatResponse(String message, Long seatId, String createdBy, LocalDateTime createdAt) {
-        this.message = message;
-        this.seatId = seatId;
-        this.createdBy = createdBy;
-        this.createdAt = createdAt;
-    }
-
-
-    public SeatResponse() {
-    }
-
-    
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Long getSeatId() {
-        return seatId;
-    }
-
-    public void setSeatId(Long seatId) {
-        this.seatId = seatId;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+//    private String message;
+//    private Long seatId;
+//    private String createdBy;
+//    private LocalDateTime createdAt;
+   
+	 private Long seatId;
+	    private String seatNumber;
+	    private SeatType seatType;
+	    private double seatFare;
+		public Long getSeatId() {
+			return seatId;
+		}
+		public void setSeatId(Long seatId) {
+			this.seatId = seatId;
+		}
+		public String getSeatNumber() {
+			return seatNumber;
+		}
+		public void setSeatNumber(String seatNumber) {
+			this.seatNumber = seatNumber;
+		}
+		public SeatType getSeatType() {
+			return seatType;
+		}
+		public void setSeatType(SeatType seatType) {
+			this.seatType = seatType;
+		}
+		public double getSeatFare() {
+			return seatFare;
+		}
+		public void setSeatFare(double seatFare) {
+			this.seatFare = seatFare;
+		}
+	    
+	    
+	    
 }

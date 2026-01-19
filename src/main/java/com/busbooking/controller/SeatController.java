@@ -46,10 +46,14 @@ public class SeatController {
         Seat savedSeat = seatService.addSeat(busId, seat);
 
         SeatResponse response = new SeatResponse();
-        response.setMessage("Seat added successfully");
+       // response.setMessage("Seat added successfully");
         response.setSeatId(savedSeat.getSeatId());
-        response.setCreatedBy(savedSeat.getCreatedBy());
-        response.setCreatedAt(savedSeat.getCreatedAt());
+        response.setSeatNumber(savedSeat.getSeatNumber());
+        response.setSeatType(savedSeat.getSeatType());
+        response.setSeatFare(savedSeat.getSeatFare());
+        
+       // response.setCreatedBy(savedSeat.getCreatedBy());
+      //  response.setCreatedAt(savedSeat.getCreatedAt());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

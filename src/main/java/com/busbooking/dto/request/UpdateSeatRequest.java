@@ -19,8 +19,4 @@ public class UpdateSeatRequest {
 		this.seatFare = seatFare;
 	}
 
-	
-	
-	
-
 }
