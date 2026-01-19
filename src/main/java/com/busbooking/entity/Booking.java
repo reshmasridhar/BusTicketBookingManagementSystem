@@ -23,7 +23,7 @@ public class Booking {
 
     private LocalDateTime bookingTime;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Passenger> passengers;
 
 	public Long getBookingId() {

@@ -1,5 +1,6 @@
 package com.busbooking.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import com.busbooking.entity.Seat;
 import com.busbooking.enums.BookingStatus;
 import com.busbooking.exception.BookingNotFoundException;
 import com.busbooking.exception.ScheduleNotFoundException;
+import com.busbooking.exception.SeatAlreadyBookedException;
 import com.busbooking.exception.SeatNotFoundException;
 import com.busbooking.mapper.BookingMapper;
 import com.busbooking.repository.BookingRepository;
@@ -29,6 +31,7 @@ public class BookingServiceImpl implements BookingService{
 	 @Autowired private BookingRepository bookingRepository;
 	    @Autowired private ScheduleRepository scheduleRepository;
 	    @Autowired private SeatRepository seatRepository;
+	   
 	    
 
 	@Override
@@ -39,13 +42,35 @@ public class BookingServiceImpl implements BookingService{
 
 	        Booking booking = BookingMapper.toEntity();
 	        booking.setSchedule(schedule);
+	        booking.setBookingTime(LocalDateTime.now());
+	        booking.setStatus(BookingStatus.INITIATED);
 
 	        List<Passenger> passengerList = new ArrayList<>();
 
 	        for (PassengerRequest pr : request.getPassengers()) {
+	        	
+	        	//find seat
 
 	            Seat seat = seatRepository.findById(pr.getSeatId())
 	                    .orElseThrow(() -> new SeatNotFoundException("Seat not found"));
+	            
+	   
+
+	            // Check if this seat is already booked in this schedule
+	            boolean seatAlreadyBooked = bookingRepository
+	                    .findBySchedule_ScheduleId(schedule.getScheduleId())
+	                    .stream()
+	                    .anyMatch(b -> b.getStatus() == BookingStatus.BOOKED &&
+	                                   b.getPassengers().stream()
+	                                    .anyMatch(p -> p.getSeat().getSeatId().equals(seat.getSeatId())));
+	            
+	            // consider only BOOKED seats
+
+	            if (seatAlreadyBooked) {
+	                throw new SeatAlreadyBookedException(
+	                        "Seat " + seat.getSeatNumber() + " is already booked for this schedule"
+	                );
+	            }
 
 	            Passenger passenger = new Passenger();
 	            passenger.setName(pr.getName());

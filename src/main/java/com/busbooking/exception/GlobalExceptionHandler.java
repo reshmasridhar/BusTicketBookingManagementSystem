@@ -208,5 +208,22 @@ public class GlobalExceptionHandler {
 
 	
 	
+	
+	@ExceptionHandler(SeatAlreadyBookedException.class)
+	public ResponseEntity<ErrorResponse> handleSeatAlreadyBooked(
+			SeatAlreadyBookedException ex,
+	        HttpServletRequest request) {
+
+	    ErrorResponse response = new ErrorResponse(
+	            LocalDateTime.now(),
+	            HttpStatus.CONFLICT.value(),
+	            ex.getMessage(),
+	            request.getRequestURI()
+	    );
+
+	    return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+	}
+	
+	
 
 }
