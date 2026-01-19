@@ -28,7 +28,10 @@ public class ScheduleMapper {
         return schedule;
     }
 
-    public static ScheduleResponse toResponse(Schedule schedule) {
+    public static ScheduleResponse toResponse(
+            Schedule schedule,
+            Double avgRating) {
+
         ScheduleResponse response = new ScheduleResponse();
         response.setScheduleId(schedule.getScheduleId());
         response.setBusId(schedule.getBus().getBusId());
@@ -39,6 +42,12 @@ public class ScheduleMapper {
         response.setDepartureTime(schedule.getDepartureTime());
         response.setArrivalTime(schedule.getArrivalTime());
         response.setStatus(schedule.getStatus());
+
+        response.setAverageRating(
+                avgRating == null ? 0.0 : avgRating
+        );
+
         return response;
     }
+
 }

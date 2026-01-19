@@ -14,9 +14,16 @@ public class ScheduleResponse {
     private LocalDate journeyDate;
     private LocalTime departureTime;
     private LocalTime arrivalTime;
+    private Double averageRating;
     private ScheduleStatus status;
     
     
+	public Double getAverageRating() {
+		return averageRating;
+	}
+	public void setAverageRating(Double averageRating) {
+		this.averageRating = averageRating;
+	}
 	public Long getScheduleId() {
 		return scheduleId;
 	}

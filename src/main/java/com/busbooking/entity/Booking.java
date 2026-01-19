@@ -13,6 +13,10 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookingId;
+    
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "schedule_id", nullable = false)
@@ -21,7 +25,15 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
-    private LocalDateTime bookingTime;
+    public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	private LocalDateTime bookingTime;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Passenger> passengers;
@@ -65,6 +77,8 @@ public class Booking {
 	public void setPassengers(List<Passenger> passengers) {
 		this.passengers = passengers;
 	}
+
+	
 
     
     

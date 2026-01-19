@@ -15,15 +15,18 @@ import com.busbooking.entity.Booking;
 import com.busbooking.entity.Passenger;
 import com.busbooking.entity.Schedule;
 import com.busbooking.entity.Seat;
+import com.busbooking.entity.User;
 import com.busbooking.enums.BookingStatus;
 import com.busbooking.exception.BookingNotFoundException;
 import com.busbooking.exception.ScheduleNotFoundException;
 import com.busbooking.exception.SeatAlreadyBookedException;
 import com.busbooking.exception.SeatNotFoundException;
+import com.busbooking.exception.UserNotFoundException;
 import com.busbooking.mapper.BookingMapper;
 import com.busbooking.repository.BookingRepository;
 import com.busbooking.repository.ScheduleRepository;
 import com.busbooking.repository.SeatRepository;
+import com.busbooking.repository.UserRepository;
 
 @Service
 public class BookingServiceImpl implements BookingService{
@@ -31,16 +34,22 @@ public class BookingServiceImpl implements BookingService{
 	 @Autowired private BookingRepository bookingRepository;
 	    @Autowired private ScheduleRepository scheduleRepository;
 	    @Autowired private SeatRepository seatRepository;
-	   
+	    @Autowired
+	    private UserRepository userRepository;
 	    
 
 	@Override
-	public BookingResponse createBooking(BookingRequest request) {
+	public BookingResponse createBooking(BookingRequest request, String userEmail) {
 		// TODO Auto-generated method stub
+		
+		User user = userRepository.findByEmail(userEmail)
+	            .orElseThrow(() -> new UserNotFoundException("User not found"));
+		
 		 Schedule schedule = scheduleRepository.findById(request.getScheduleId())
 	                .orElseThrow(() -> new ScheduleNotFoundException("Schedule not found"));
 
 	        Booking booking = BookingMapper.toEntity();
+	        booking.setUser(user);
 	        booking.setSchedule(schedule);
 	        booking.setBookingTime(LocalDateTime.now());
 	        booking.setStatus(BookingStatus.INITIATED);
@@ -115,6 +124,19 @@ public class BookingServiceImpl implements BookingService{
                 .stream()
                 .map(BookingMapper::toResponse)
                 .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<BookingResponse> getBookingsByUser(String userEmail) {
+		// TODO Auto-generated method stub
+		 User user = userRepository.findByEmail(userEmail)
+	                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+	        List<Booking> bookings = bookingRepository.findByUser_UserId(user.getUserId());
+
+	        return bookings.stream()
+	                .map(BookingMapper::toResponse) // reuse your BookingMapper
+	                .toList();
 	}
 
 }

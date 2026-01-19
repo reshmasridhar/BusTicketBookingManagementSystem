@@ -1,5 +1,6 @@
 package com.busbooking.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,10 @@ public class BookingController {
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(
-            @RequestBody BookingRequest request) {
+            @RequestBody BookingRequest request,Principal principal) {
 
         return ResponseEntity.ok(
-                bookingService.createBooking(request)
+                bookingService.createBooking(request, principal.getName()) 
         );
     }
 
@@ -60,4 +61,25 @@ public class BookingController {
                 bookingService.getAllBookings()
         );
     }
+    
+    
+    
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user")
+    public ResponseEntity<List<BookingResponse>> getUserBookings(Principal principal) {
+
+        String userEmail = principal.getName();
+        System.out.println("Logged-in user email: " + userEmail);
+
+        List<BookingResponse> bookings = bookingService.getBookingsByUser(userEmail);
+
+        return ResponseEntity.ok(bookings);
+    }
+    
+    
+    
+    
+    
+    
+    
 }

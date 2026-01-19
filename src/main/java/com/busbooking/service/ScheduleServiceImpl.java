@@ -20,6 +20,7 @@ import com.busbooking.exception.ScheduleNotFoundException;
 import com.busbooking.mapper.ScheduleMapper;
 import com.busbooking.repository.BusRepository;
 import com.busbooking.repository.DriverRepository;
+import com.busbooking.repository.ReviewRepository;
 import com.busbooking.repository.ScheduleRepository;
 
 @Service
@@ -33,6 +34,10 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Autowired
     private DriverRepository driverRepository;
+    
+    @Autowired
+    private ReviewRepository reviewRepository;
+
 
     // ================= CREATE =================
     @Override
@@ -75,7 +80,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         Schedule saved = scheduleRepository.save(schedule);
 
-        return ScheduleMapper.toResponse(saved);
+        return ScheduleMapper.toResponse(saved, 0.0);
     }
 
     // ================= GET ALL =================
@@ -84,7 +89,14 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         return scheduleRepository.findAll()
                 .stream()
-                .map(ScheduleMapper::toResponse)
+                .map(schedule -> {
+
+                    Double avgRating =
+                            reviewRepository.getAverageRatingByBusId(
+                                    schedule.getBus().getBusId());
+
+                    return ScheduleMapper.toResponse(schedule, avgRating);
+                })
                 .toList();
     }
 
@@ -128,7 +140,13 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
 
         return schedules.stream()
-                .map(ScheduleMapper::toResponse)
+        		.map(schedule -> {
+        		    Double avgRating =
+        		            reviewRepository.getAverageRatingByBusId(
+        		                    schedule.getBus().getBusId());
+
+        		    return ScheduleMapper.toResponse(schedule, avgRating);
+        		})
                 .toList();
     }
 
@@ -143,7 +161,12 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         schedule.setStatus(ScheduleStatus.CANCELLED);
 
+        Double avgRating =
+                reviewRepository.getAverageRatingByBusId(
+                        schedule.getBus().getBusId());
+
         return ScheduleMapper.toResponse(
-                scheduleRepository.save(schedule));
+                scheduleRepository.save(schedule),
+                avgRating);
     }
 }

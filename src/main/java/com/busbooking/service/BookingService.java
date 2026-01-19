@@ -7,12 +7,17 @@ import com.busbooking.dto.response.BookingResponse;
 
 public interface BookingService {
 	
-	BookingResponse createBooking(BookingRequest request);
+	//BookingResponse createBooking(BookingRequest request);
 
     BookingResponse confirmPayment(Long bookingId);
 
     BookingResponse cancelBooking(Long bookingId);
 
     List<BookingResponse> getAllBookings();
+    
+    List<BookingResponse> getBookingsByUser(String userEmail);
+    
+    BookingResponse createBooking(BookingRequest request, String userEmail);
+
 
 }
