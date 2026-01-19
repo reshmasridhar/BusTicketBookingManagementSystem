@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,15 +24,11 @@ import com.busbooking.service.ScheduleService;
 @RequestMapping("/api/admin/schedules")
 public class ScheduleController {
 
-//    private final ScheduleService scheduleService;
-//
-//    public ScheduleController(ScheduleService scheduleService) {
-//        this.scheduleService = scheduleService;
-//    }
-    
     @Autowired ScheduleService scheduleService;
 
     // ================= CREATE =================
+    
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ScheduleResponse> createSchedule(
             @RequestBody ScheduleRequest request) {
@@ -42,6 +39,7 @@ public class ScheduleController {
     }
 
     // ================= GET ALL =================
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<ScheduleResponse>> getAllSchedules() {
 
@@ -50,6 +48,7 @@ public class ScheduleController {
     }
 
     // ================= SEARCH =================
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/search")
     public ResponseEntity<List<ScheduleResponse>> searchSchedules(
             @RequestParam(required = false) String source,
@@ -62,6 +61,7 @@ public class ScheduleController {
     }
 
     // ================= CANCEL =================
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{scheduleId}/cancel")
     public ResponseEntity<ScheduleResponse> cancelSchedule(
             @PathVariable Long scheduleId) {

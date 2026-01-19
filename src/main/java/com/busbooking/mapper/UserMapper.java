@@ -18,7 +18,7 @@ public class UserMapper {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(UserRole.PASSENGER);
+        user.setRole(UserRole.USER);
         user.setCreatedBy("SYSTEM");
         user.setCreatedAt(LocalDateTime.now());
         return user;

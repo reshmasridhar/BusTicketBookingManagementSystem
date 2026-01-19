@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<PaymentResponse> makePayment(
             @RequestBody PaymentRequest request) {
@@ -32,12 +34,14 @@ public class PaymentController {
                 HttpStatus.CREATED);
     }
     
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<PaymentResponse>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
     }
 
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{paymentId}")
     public ResponseEntity<PaymentResponse> getPaymentById(
             @PathVariable Long paymentId) {
@@ -46,6 +50,7 @@ public class PaymentController {
                 paymentService.getPaymentById(paymentId));
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<PaymentResponse> getPaymentByBooking(
             @PathVariable Long bookingId) {

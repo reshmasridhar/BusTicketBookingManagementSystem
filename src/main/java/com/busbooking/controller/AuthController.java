@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import com.busbooking.dto.response.UserSignupResponse;
 import com.busbooking.entity.User;
 import com.busbooking.enums.UserRole;
 import com.busbooking.exception.UserNotFoundException;
+import com.busbooking.security.JwtUtil;
 import com.busbooking.service.UserService;
 
 @RestController
@@ -30,6 +32,13 @@ public class AuthController {
 
 	 @Autowired
 	    private UserService userService;
+	 
+	 @Autowired
+	 private BCryptPasswordEncoder passwordEncoder;
+
+	 @Autowired
+	 private JwtUtil jwtUtil;
+
 
 	    
 	    @PostMapping("/signup")
@@ -39,9 +48,13 @@ public class AuthController {
 	        User user = new User();
 	        user.setName(request.getName());
 	        user.setEmail(request.getEmail());
-	        user.setPassword(request.getPassword());
+	        
+	        
+	        user.setPassword(passwordEncoder.encode(request.getPassword()));
+	        
+	        
 	        user.setPhoneNumber(request.getPhoneNumber());
-	        user.setRole(UserRole.PASSENGER);
+	        user.setRole(UserRole.USER);
 	        user.setCreatedBy("SYSTEM");
 	        user.setCreatedAt(LocalDateTime.now());
 
@@ -70,14 +83,27 @@ public class AuthController {
 
 	        User user = optionalUser.get();
 
-	        if (!user.getPassword().equals(request.getPassword())) {
+	        if (!passwordEncoder.matches(
+	                request.getPassword(),
+	                user.getPassword())) {
+
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 	                    .body(new LoginResponse("Invalid email or password"));
 	        }
 
-	        return ResponseEntity.ok(
-	                new LoginResponse("Login successful", user.getRole().name())
+	        //JWT GENERATION
+	        String token = jwtUtil.generateToken(
+	                user.getEmail(),
+	                user.getRole().name()
 	        );
+
+	        LoginResponse response = new LoginResponse(
+	                "Login successful",
+	                token,
+	                user.getRole().name()
+	        );
+
+	        return ResponseEntity.ok(response);
 	    }
 	    
 	    @PostMapping("/forgot-password")
@@ -92,7 +118,7 @@ public class AuthController {
 	        String tempPassword = "TMP#" +
 	                UUID.randomUUID().toString().substring(0, 5);
 
-	        user.setPassword(tempPassword);
+	        user.setPassword(passwordEncoder.encode(tempPassword));
 	        user.setUpdatedBy(user.getEmail());
 	        user.setUpdatedAt(LocalDateTime.now());
 

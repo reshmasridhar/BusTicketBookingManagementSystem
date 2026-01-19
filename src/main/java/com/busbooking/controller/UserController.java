@@ -1,11 +1,12 @@
 package com.busbooking.controller;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    // ================= USER + ADMIN =================
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping("/reset-password")
     public ResponseEntity<GenericResponse> resetPassword(
             @RequestBody ResetPasswordRequest request) {
@@ -33,12 +39,20 @@ public class UserController {
                         new UserNotFoundException(
                                 "User not found with email: " + request.getEmail()));
 
-        if (!user.getPassword().equals(request.getOldPassword())) {
+        //Correct password check
+        if (!passwordEncoder.matches(
+                request.getOldPassword(),
+                user.getPassword())) {
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new GenericResponse("Old password is incorrect"));
         }
 
-        user.setPassword(request.getNewPassword());
+        //Encrypt new password
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+
         user.setUpdatedBy(user.getEmail());
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -52,6 +66,4 @@ public class UserController {
                 )
         );
     }
-
-
 }

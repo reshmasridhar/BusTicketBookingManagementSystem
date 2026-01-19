@@ -5,7 +5,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.busbooking.dto.request.AddSeatRequest;
 import com.busbooking.dto.request.UpdateSeatRequest;
@@ -22,6 +30,7 @@ public class SeatController {
     @Autowired
     private SeatService seatService;
     
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/{busId}/seats")
     public ResponseEntity<List<SeatListResponse>> getSeatsByBusId(
             @PathVariable Long busId) {
@@ -33,6 +42,7 @@ public class SeatController {
 
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{busId}/seats")
     public ResponseEntity<SeatResponse> addSeat(
             @PathVariable Long busId,
@@ -58,6 +68,7 @@ public class SeatController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{busId}/seats/{seatId}")
     public ResponseEntity<GenericResponse> updateSeat(
             @PathVariable Long busId,
@@ -75,6 +86,7 @@ public class SeatController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{busId}/seats/{seatId}")
     public ResponseEntity<GenericResponse> deleteSeat(
             @PathVariable Long busId,
