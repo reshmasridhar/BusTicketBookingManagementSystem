@@ -26,6 +26,8 @@ import com.busbooking.exception.UserNotFoundException;
 import com.busbooking.security.JwtUtil;
 import com.busbooking.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -43,7 +45,7 @@ public class AuthController {
 	    
 	    @PostMapping("/signup")
 	    public ResponseEntity<UserSignupResponse> signup(
-	            @RequestBody UserSignupRequest request) throws Exception {
+	            @RequestBody @Valid UserSignupRequest request) throws Exception {
 
 	        User user = new User();
 	        user.setName(request.getName());
@@ -72,7 +74,7 @@ public class AuthController {
 	    
 	    @PostMapping("/login")
 	    public ResponseEntity<LoginResponse> login(
-	            @RequestBody LoginRequest request) {
+	            @RequestBody @Valid LoginRequest request) {
 
 	        Optional<User> optionalUser = userService.findByEmail(request.getEmail());
 
@@ -108,7 +110,7 @@ public class AuthController {
 	    
 	    @PostMapping("/forgot-password")
 	    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
-	            @RequestBody ForgotPasswordRequest request) {
+	            @RequestBody @Valid ForgotPasswordRequest request) {
 
 	        User user = userService.findByEmail(request.getEmail())
 	                .orElseThrow(() ->

@@ -39,8 +39,8 @@ public class Bus {
     @Column(nullable = false)
     private Integer totalSeats;
 
-    @Column(nullable = false)
-    private Integer availableSeats;
+//    @Column(nullable = false)
+//    private Integer availableSeats;
 
     @Column(nullable = false)
     private String createdBy;
@@ -109,13 +109,13 @@ public class Bus {
 		this.totalSeats = totalSeats;
 	}
 
-	public Integer getAvailableSeats() {
-		return availableSeats;
-	}
-
-	public void setAvailableSeats(Integer availableSeats) {
-		this.availableSeats = availableSeats;
-	}
+//	public Integer getAvailableSeats() {
+//		return availableSeats;
+//	}
+//
+//	public void setAvailableSeats(Integer availableSeats) {
+//		this.availableSeats = availableSeats;
+//	}
 
 	public String getCreatedBy() {
 		return createdBy;

@@ -2,9 +2,14 @@ package com.busbooking.dto.request;
 
 import java.util.List;
 
+import jakarta.validation.constraints.NotNull;
+
 public class BookingRequest {
 	
+	@NotNull
 	private Long scheduleId;
+	
+	@NotNull
     private List<PassengerRequest> passengers;
 	public Long getScheduleId() {
 		return scheduleId;

@@ -15,7 +15,7 @@ public class JwtUtil {
     private static final SecretKey KEY =
             Keys.hmacShaKeyFor("BUSBOOKING_SECRET_KEY_1234567890".getBytes());
 
-    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 day
+    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; 
 
     public String generateToken(String email, String role) {
 

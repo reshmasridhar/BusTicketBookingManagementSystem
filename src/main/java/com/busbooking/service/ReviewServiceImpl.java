@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,9 @@ import com.busbooking.repository.UserRepository;
 @Service
 public class ReviewServiceImpl implements ReviewService {
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(ReviewServiceImpl.class);
+
     @Autowired
     private ReviewRepository reviewRepository;
 
@@ -33,43 +38,52 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewResponse addReview(ReviewRequest request, String userEmail) {
 
-        // 1 Fetch booking
-        Booking booking = bookingRepository.findById(request.getBookingId())
-                .orElseThrow(() ->
-                        new CustomReviewException("Booking not found"));
+        logger.info("Adding review for bookingId: {} by user: {}",
+                request.getBookingId(), userEmail);
 
-       
         
+        Booking booking = bookingRepository.findById(request.getBookingId())
+                .orElseThrow(() -> {
+                    logger.warn("Booking not found with id: {}", request.getBookingId());
+                    return new CustomReviewException("Booking not found");
+                });
 
-        //  Check booking status
+        
         if (booking.getStatus() != BookingStatus.BOOKED) {
+            logger.warn("Review attempt for non-booked bookingId: {}", request.getBookingId());
             throw new CustomReviewException(
                     "Review allowed only for confirmed bookings");
         }
 
-        //  Check journey completion
+        
         if (!booking.getSchedule()
                 .getJourneyDate()
                 .isBefore(LocalDate.now())) {
 
-            throw new CustomReviewException(
-                    "Trip not completed yet");
+            logger.warn("Review attempted before journey completion for bookingId: {}",
+                    request.getBookingId());
+
+            throw new CustomReviewException("Trip not completed yet");
         }
 
-        // Prevent duplicate reviews
+        
         if (reviewRepository
                 .existsByBooking_BookingId(request.getBookingId())) {
+
+            logger.warn("Duplicate review attempt for bookingId: {}", request.getBookingId());
 
             throw new CustomReviewException(
                     "Review already submitted for this booking");
         }
 
-        // Fetch user
+        
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() ->
-                        new CustomReviewException("User not found"));
+                .orElseThrow(() -> {
+                    logger.warn("User not found with email: {}", userEmail);
+                    return new CustomReviewException("User not found");
+                });
 
-        // Create review
+        
         Review review = new Review();
         review.setBooking(booking);
         review.setBus(booking.getSchedule().getBus());
@@ -80,24 +94,36 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review saved = reviewRepository.save(review);
 
+        logger.info("Review saved successfully with reviewId: {}", saved.getReviewId());
+
         return mapToResponse(saved);
     }
 
     @Override
     public List<ReviewResponse> getReviewsByBusId(Long busId) {
-        return reviewRepository.findByBus_BusId(busId)
+
+        logger.info("Fetching reviews for busId: {}", busId);
+
+        List<ReviewResponse> reviews = reviewRepository.findByBus_BusId(busId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+
+        logger.info("Total reviews found for busId {}: {}", busId, reviews.size());
+
+        return reviews;
     }
 
+    
     private ReviewResponse mapToResponse(Review review) {
+
         ReviewResponse response = new ReviewResponse();
         response.setReviewId(review.getReviewId());
         response.setRating(review.getRating());
         response.setReview(review.getReview());
         response.setUserName(review.getUser().getName());
         response.setCreatedAt(review.getCreatedAt());
+
         return response;
     }
 }

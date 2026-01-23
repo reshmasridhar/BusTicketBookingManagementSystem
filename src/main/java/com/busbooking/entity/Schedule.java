@@ -2,6 +2,7 @@ package com.busbooking.entity;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.time.LocalDateTime;
 
 import com.busbooking.enums.ScheduleStatus;
@@ -19,8 +20,20 @@ public class Schedule {
     @ManyToOne
     @JoinColumn(name = "bus_id", nullable = false)
     private Bus bus;
+    
+    private int totalSeats;
+    private int availableSeats;
+    
+    @OneToMany(mappedBy = "schedule")
+    private List<Booking> bookings;
 
-    @ManyToOne
+    public List<Booking> getBookings() {
+		return bookings;
+	}
+	public void setBookings(List<Booking> bookings) {
+		this.bookings = bookings;
+	}
+	@ManyToOne
     @JoinColumn(name = "driver_id", nullable = false)
     private Driver driver;
 
@@ -102,6 +115,19 @@ public class Schedule {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
+	public int getTotalSeats() {
+		return totalSeats;
+	}
+	public void setTotalSeats(int totalSeats) {
+		this.totalSeats = totalSeats;
+	}
+	public int getAvailableSeats() {
+		return availableSeats;
+	}
+	public void setAvailableSeats(int availableSeats) {
+		this.availableSeats = availableSeats;
+	}
 
+	
     
 }

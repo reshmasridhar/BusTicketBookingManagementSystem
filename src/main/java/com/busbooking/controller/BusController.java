@@ -1,5 +1,4 @@
 package com.busbooking.controller;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -7,12 +6,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.busbooking.dto.request.BusRequest;
 import com.busbooking.dto.response.BusResponse;
 import com.busbooking.dto.response.GenericResponse;
 import com.busbooking.entity.Bus;
 import com.busbooking.service.BusService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/buses")
@@ -25,8 +34,13 @@ public class BusController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<BusResponse> addBus(@RequestBody Bus bus) {
+    public ResponseEntity<BusResponse> addBus(@RequestBody @Valid BusRequest request) {
 
+        Bus bus = new Bus();
+        bus.setBusName(request.getBusName());
+        bus.setBusNumber(request.getBusNumber());
+        bus.setBusType(Enum.valueOf(com.busbooking.enums.BusType.class, request.getBusType()));
+        bus.setTotalSeats(request.getTotalSeats());
         bus.setCreatedBy("ADMIN");
         bus.setCreatedAt(LocalDateTime.now());
 
@@ -40,8 +54,13 @@ public class BusController {
     @PutMapping("/{busId}")
     public ResponseEntity<BusResponse> updateBus(
             @PathVariable Long busId,
-            @RequestBody Bus bus) {
+            @RequestBody @Valid BusRequest request) {
 
+        Bus bus = new Bus();
+        bus.setBusName(request.getBusName());
+        bus.setBusNumber(request.getBusNumber());
+        bus.setBusType(Enum.valueOf(com.busbooking.enums.BusType.class, request.getBusType()));
+        bus.setTotalSeats(request.getTotalSeats());
         bus.setUpdatedBy("ADMIN");
 
         return ResponseEntity.ok(

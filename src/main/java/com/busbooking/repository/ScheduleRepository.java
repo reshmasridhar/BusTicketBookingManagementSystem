@@ -11,8 +11,6 @@ import com.busbooking.entity.Schedule;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-	
-	//search methods
     List<Schedule> findBySourceAndDestinationAndJourneyDate(
             String source,
             String destination,

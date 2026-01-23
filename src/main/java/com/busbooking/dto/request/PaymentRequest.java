@@ -2,9 +2,13 @@ package com.busbooking.dto.request;
 
 import com.busbooking.enums.PaymentMode;
 
+import jakarta.validation.constraints.NotNull;
+
 public class PaymentRequest {
 	
+	@NotNull
 	private Long bookingId;
+	
     private PaymentMode paymentMode;
 	public Long getBookingId() {
 		return bookingId;

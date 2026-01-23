@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,115 +30,180 @@ import com.busbooking.repository.ScheduleRepository;
 import com.busbooking.repository.SeatRepository;
 import com.busbooking.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+
+@Transactional
 @Service
-public class BookingServiceImpl implements BookingService{
-	
-	 @Autowired private BookingRepository bookingRepository;
-	    @Autowired private ScheduleRepository scheduleRepository;
-	    @Autowired private SeatRepository seatRepository;
-	    @Autowired
-	    private UserRepository userRepository;
-	    
+public class BookingServiceImpl implements BookingService {
 
-	@Override
-	public BookingResponse createBooking(BookingRequest request, String userEmail) {
-		// TODO Auto-generated method stub
-		
-		User user = userRepository.findByEmail(userEmail)
-	            .orElseThrow(() -> new UserNotFoundException("User not found"));
-		
-		 Schedule schedule = scheduleRepository.findById(request.getScheduleId())
-	                .orElseThrow(() -> new ScheduleNotFoundException("Schedule not found"));
+    private static final Logger logger =
+            LoggerFactory.getLogger(BookingServiceImpl.class);
 
-	        Booking booking = BookingMapper.toEntity();
-	        booking.setUser(user);
-	        booking.setSchedule(schedule);
-	        booking.setBookingTime(LocalDateTime.now());
-	        booking.setStatus(BookingStatus.INITIATED);
+    @Autowired
+    private BookingRepository bookingRepository;
 
-	        List<Passenger> passengerList = new ArrayList<>();
+    @Autowired
+    private ScheduleRepository scheduleRepository;
 
-	        for (PassengerRequest pr : request.getPassengers()) {
-	        	
-	        	//find seat
+    @Autowired
+    private SeatRepository seatRepository;
 
-	            Seat seat = seatRepository.findById(pr.getSeatId())
-	                    .orElseThrow(() -> new SeatNotFoundException("Seat not found"));
-	            
-	   
+    @Autowired
+    private UserRepository userRepository;
 
-	            // Check if this seat is already booked in this schedule
-	            boolean seatAlreadyBooked = bookingRepository
-	                    .findBySchedule_ScheduleId(schedule.getScheduleId())
-	                    .stream()
-	                    .anyMatch(b -> b.getStatus() == BookingStatus.BOOKED &&
-	                                   b.getPassengers().stream()
-	                                    .anyMatch(p -> p.getSeat().getSeatId().equals(seat.getSeatId())));
-	            
-	            // consider only BOOKED seats
+    
+    @Override
+    public BookingResponse createBooking(BookingRequest request, String userEmail) {
 
-	            if (seatAlreadyBooked) {
-	                throw new SeatAlreadyBookedException(
-	                        "Seat " + seat.getSeatNumber() + " is already booked for this schedule"
-	                );
-	            }
+        logger.info("Creating booking for user: {}", userEmail);
 
-	            Passenger passenger = new Passenger();
-	            passenger.setName(pr.getName());
-	            passenger.setAge(pr.getAge());
-	            passenger.setGender(pr.getGender());
-	            passenger.setSeat(seat);
-	            passenger.setBooking(booking);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> {
+                    logger.warn("User not found with email: {}", userEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
-	            passengerList.add(passenger);
-	        }
+        Schedule schedule = scheduleRepository.findById(request.getScheduleId())
+                .orElseThrow(() -> {
+                    logger.warn("Schedule not found with id: {}", request.getScheduleId());
+                    return new ScheduleNotFoundException("Schedule not found");
+                });
 
-	        booking.setPassengers(passengerList);
-	        Booking saved = bookingRepository.save(booking);
+        Booking booking = BookingMapper.toEntity();
+        booking.setUser(user);
+        booking.setSchedule(schedule);
+        booking.setBookingTime(LocalDateTime.now());
+        booking.setStatus(BookingStatus.INITIATED);
 
-	        return BookingMapper.toResponse(saved);
-	}
+        List<Passenger> passengerList = new ArrayList<>();
 
-	@Override
-	public BookingResponse confirmPayment(Long bookingId) {
-		// TODO Auto-generated method stub
-		Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+        for (PassengerRequest pr : request.getPassengers()) {
+
+            logger.debug("Processing passenger: {}", pr.getName());
+
+            Seat seat = seatRepository.findById(pr.getSeatId())
+                    .orElseThrow(() -> {
+                        logger.warn("Seat not found with id: {}", pr.getSeatId());
+                        return new SeatNotFoundException("Seat not found");
+                    });
+
+            boolean seatAlreadyBooked = bookingRepository
+                    .findBySchedule_ScheduleId(schedule.getScheduleId())
+                    .stream()
+                    .anyMatch(b -> b.getStatus() == BookingStatus.BOOKED &&
+                            b.getPassengers().stream()
+                                    .anyMatch(p -> p.getSeat().getSeatId().equals(seat.getSeatId())));
+
+            if (seatAlreadyBooked) {
+                logger.warn("Seat {} already booked for schedule {}",
+                        seat.getSeatNumber(), schedule.getScheduleId());
+
+                throw new SeatAlreadyBookedException(
+                        "Seat " + seat.getSeatNumber() + " is already booked for this schedule"
+                );
+            }
+
+            Passenger passenger = new Passenger();
+            passenger.setName(pr.getName());
+            passenger.setAge(pr.getAge());
+            passenger.setGender(pr.getGender());
+            passenger.setSeat(seat);
+            passenger.setBooking(booking);
+
+            passengerList.add(passenger);
+        }
+
+        booking.setPassengers(passengerList);
+
+        Booking savedBooking = bookingRepository.save(booking);
+
+        logger.info("Booking created successfully with bookingId: {}",
+                savedBooking.getBookingId());
+
+        return BookingMapper.toResponse(savedBooking);
+    }
+
+    
+    @Override
+    public BookingResponse confirmPayment(Long bookingId) {
+
+        logger.info("Confirming payment for bookingId: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.warn("Booking not found with id: {}", bookingId);
+                    return new BookingNotFoundException("Booking not found");
+                });
 
         booking.setStatus(BookingStatus.BOOKED);
-        return BookingMapper.toResponse(bookingRepository.save(booking));
-	}
 
-	@Override
-	public BookingResponse cancelBooking(Long bookingId) {
-		// TODO Auto-generated method stub
-		Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+        Schedule schedule = booking.getSchedule();
+        int seatsBooked = booking.getPassengers().size();
+
+        schedule.setAvailableSeats(
+                schedule.getAvailableSeats() - seatsBooked
+        );
+
+        scheduleRepository.save(schedule);
+        Booking savedBooking = bookingRepository.save(booking);
+
+        logger.info("Payment confirmed. Booking marked as BOOKED for bookingId: {}", bookingId);
+
+        return BookingMapper.toResponse(savedBooking);
+    }
+
+    
+    @Override
+    public BookingResponse cancelBooking(Long bookingId) {
+
+        logger.info("Cancelling booking with id: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    logger.warn("Booking not found with id: {}", bookingId);
+                    return new BookingNotFoundException("Booking not found");
+                });
 
         booking.setStatus(BookingStatus.CANCELLED);
-        return BookingMapper.toResponse(bookingRepository.save(booking));
-	}
 
-	@Override
-	public List<BookingResponse> getAllBookings() {
-		// TODO Auto-generated method stub
-		return bookingRepository.findAll()
+        Booking cancelledBooking = bookingRepository.save(booking);
+
+        logger.info("Booking cancelled successfully for bookingId: {}", bookingId);
+
+        return BookingMapper.toResponse(cancelledBooking);
+    }
+
+    
+    @Override
+    public List<BookingResponse> getAllBookings() {
+
+        logger.info("Fetching all bookings");
+
+        return bookingRepository.findAll()
                 .stream()
                 .map(BookingMapper::toResponse)
                 .collect(Collectors.toList());
-	}
+    }
 
-	@Override
-	public List<BookingResponse> getBookingsByUser(String userEmail) {
-		// TODO Auto-generated method stub
-		 User user = userRepository.findByEmail(userEmail)
-	                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    
+    @Override
+    public List<BookingResponse> getBookingsByUser(String userEmail) {
 
-	        List<Booking> bookings = bookingRepository.findByUser_UserId(user.getUserId());
+        logger.info("Fetching bookings for user: {}", userEmail);
 
-	        return bookings.stream()
-	                .map(BookingMapper::toResponse) // reuse your BookingMapper
-	                .toList();
-	}
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> {
+                    logger.warn("User not found with email: {}", userEmail);
+                    return new UserNotFoundException("User not found");
+                });
 
+        List<Booking> bookings =
+                bookingRepository.findByUser_UserId(user.getUserId());
+
+        logger.info("Found {} bookings for user {}", bookings.size(), userEmail);
+
+        return bookings.stream()
+                .map(BookingMapper::toResponse)
+                .toList();
+    }
 }

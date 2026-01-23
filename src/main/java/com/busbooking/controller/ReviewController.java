@@ -14,6 +14,8 @@ import com.busbooking.dto.request.ReviewRequest;
 import com.busbooking.dto.response.ReviewResponse;
 import com.busbooking.service.ReviewService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
@@ -24,7 +26,7 @@ public class ReviewController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<ReviewResponse> addReview(
-            @RequestBody ReviewRequest request,
+            @RequestBody @Valid ReviewRequest request,
             Authentication authentication) {
 
         String userEmail = authentication.getName();

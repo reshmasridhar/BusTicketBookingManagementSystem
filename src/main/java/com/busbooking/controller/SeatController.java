@@ -23,6 +23,8 @@ import com.busbooking.dto.response.SeatResponse;
 import com.busbooking.entity.Seat;
 import com.busbooking.service.SeatService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/admin/buses")
 public class SeatController {
@@ -46,7 +48,7 @@ public class SeatController {
     @PostMapping("/{busId}/seats")
     public ResponseEntity<SeatResponse> addSeat(
             @PathVariable Long busId,
-            @RequestBody AddSeatRequest request) {
+            @RequestBody @Valid AddSeatRequest request) {
 
         Seat seat = new Seat();
         seat.setSeatNumber(request.getSeatNumber());
@@ -73,7 +75,7 @@ public class SeatController {
     public ResponseEntity<GenericResponse> updateSeat(
             @PathVariable Long busId,
             @PathVariable Long seatId,
-            @RequestBody UpdateSeatRequest request) {
+            @RequestBody @Valid UpdateSeatRequest request) {
 
         Seat seat = seatService.updateSeat(busId, seatId, request.getSeatFare());
 

@@ -3,6 +3,8 @@ package com.busbooking.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +28,10 @@ import com.busbooking.repository.ScheduleRepository;
 @Service
 public class ScheduleServiceImpl implements ScheduleService {
 
-	@Autowired
+    private static final Logger logger =
+            LoggerFactory.getLogger(ScheduleServiceImpl.class);
+
+    @Autowired
     private ScheduleRepository scheduleRepository;
 
     @Autowired
@@ -34,22 +39,28 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Autowired
     private DriverRepository driverRepository;
-    
+
     @Autowired
     private ReviewRepository reviewRepository;
 
-
-    // ================= CREATE =================
+    
     @Override
     public ScheduleResponse createSchedule(ScheduleRequest request) {
 
+        logger.info("Creating schedule for busId: {}, driverId: {}, date: {}",
+                request.getBusId(), request.getDriverId(), request.getJourneyDate());
+
         Bus bus = busRepository.findById(request.getBusId())
-                .orElseThrow(() ->
-                        new BusNotFoundException("Bus not found"));
+                .orElseThrow(() -> {
+                    logger.warn("Bus not found with id: {}", request.getBusId());
+                    return new BusNotFoundException("Bus not found");
+                });
 
         Driver driver = driverRepository.findById(request.getDriverId())
-                .orElseThrow(() ->
-                        new DriverNotFoundException("Driver not found"));
+                .orElseThrow(() -> {
+                    logger.warn("Driver not found with id: {}", request.getDriverId());
+                    return new DriverNotFoundException("Driver not found");
+                });
 
         boolean busConflict =
                 scheduleRepository.existsBusConflict(
@@ -59,6 +70,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                         request.getArrivalTime());
 
         if (busConflict) {
+            logger.warn("Bus already scheduled for this time slot. busId: {}", bus.getBusId());
             throw new BusAlreadyScheduledException(
                     "Bus is already scheduled for this time slot");
         }
@@ -71,6 +83,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                         request.getArrivalTime());
 
         if (driverConflict) {
+            logger.warn("Driver already scheduled at this time. driverId: {}", driver.getDriverId());
             throw new DriverAlreadyScheduledException(
                     "Driver is already assigned to another schedule at this time");
         }
@@ -78,16 +91,23 @@ public class ScheduleServiceImpl implements ScheduleService {
         Schedule schedule =
                 ScheduleMapper.toEntity(request, bus, driver);
 
+        schedule.setTotalSeats(bus.getTotalSeats());
+        schedule.setAvailableSeats(bus.getTotalSeats());
+
         Schedule saved = scheduleRepository.save(schedule);
+
+        logger.info("Schedule created successfully with scheduleId: {}", saved.getScheduleId());
 
         return ScheduleMapper.toResponse(saved, 0.0);
     }
 
-    // ================= GET ALL =================
+    
     @Override
     public List<ScheduleResponse> getAllSchedules() {
 
-        return scheduleRepository.findAll()
+        logger.info("Fetching all schedules");
+
+        List<ScheduleResponse> schedules = scheduleRepository.findAll()
                 .stream()
                 .map(schedule -> {
 
@@ -98,14 +118,21 @@ public class ScheduleServiceImpl implements ScheduleService {
                     return ScheduleMapper.toResponse(schedule, avgRating);
                 })
                 .toList();
+
+        logger.info("Total schedules found: {}", schedules.size());
+
+        return schedules;
     }
 
-    // ================= SEARCH =================
+    
     @Override
     public List<ScheduleResponse> searchSchedules(
             String source,
             String destination,
             LocalDate journeyDate) {
+
+        logger.info("Searching schedules | source: {}, destination: {}, date: {}",
+                source, destination, journeyDate);
 
         List<Schedule> schedules;
 
@@ -139,25 +166,33 @@ public class ScheduleServiceImpl implements ScheduleService {
             schedules = scheduleRepository.findAll();
         }
 
-        return schedules.stream()
-        		.map(schedule -> {
-        		    Double avgRating =
-        		            reviewRepository.getAverageRatingByBusId(
-        		                    schedule.getBus().getBusId());
+        List<ScheduleResponse> responses = schedules.stream()
+                .map(schedule -> {
+                    Double avgRating =
+                            reviewRepository.getAverageRatingByBusId(
+                                    schedule.getBus().getBusId());
 
-        		    return ScheduleMapper.toResponse(schedule, avgRating);
-        		})
+                    return ScheduleMapper.toResponse(schedule, avgRating);
+                })
                 .toList();
+
+        logger.info("Schedules found after search: {}", responses.size());
+
+        return responses;
     }
 
-    // ================= CANCEL =================
+    
     @Override
     public ScheduleResponse cancelSchedule(Long scheduleId) {
 
+        logger.info("Cancelling schedule with id: {}", scheduleId);
+
         Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() ->
-                        new ScheduleNotFoundException(
-                                "Schedule not found with id: " + scheduleId));
+                .orElseThrow(() -> {
+                    logger.warn("Schedule not found with id: {}", scheduleId);
+                    return new ScheduleNotFoundException(
+                            "Schedule not found with id: " + scheduleId);
+                });
 
         schedule.setStatus(ScheduleStatus.CANCELLED);
 
@@ -165,8 +200,12 @@ public class ScheduleServiceImpl implements ScheduleService {
                 reviewRepository.getAverageRatingByBusId(
                         schedule.getBus().getBusId());
 
-        return ScheduleMapper.toResponse(
+        ScheduleResponse response = ScheduleMapper.toResponse(
                 scheduleRepository.save(schedule),
                 avgRating);
+
+        logger.info("Schedule cancelled successfully with id: {}", scheduleId);
+
+        return response;
     }
 }

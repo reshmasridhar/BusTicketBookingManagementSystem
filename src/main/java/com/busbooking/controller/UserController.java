@@ -18,6 +18,8 @@ import com.busbooking.entity.User;
 import com.busbooking.exception.UserNotFoundException;
 import com.busbooking.service.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -28,11 +30,10 @@ public class UserController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    // ================= USER + ADMIN =================
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping("/reset-password")
     public ResponseEntity<GenericResponse> resetPassword(
-            @RequestBody ResetPasswordRequest request) {
+            @RequestBody @Valid ResetPasswordRequest request) {
 
         User user = userService.findByEmail(request.getEmail())
                 .orElseThrow(() ->

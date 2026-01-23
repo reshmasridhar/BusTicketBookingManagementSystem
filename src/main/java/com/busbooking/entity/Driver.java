@@ -35,7 +35,6 @@ public class Driver {
     private String updatedBy;
     private LocalDateTime updatedAt;
 
-    // getters & setters
 
     public Long getDriverId() {
         return driverId;

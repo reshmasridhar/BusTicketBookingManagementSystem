@@ -21,7 +21,7 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
-
+    
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
@@ -35,7 +35,7 @@ public class Booking {
 
 	private LocalDateTime bookingTime;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     private List<Passenger> passengers;
 
 	public Long getBookingId() {

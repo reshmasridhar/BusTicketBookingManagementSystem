@@ -1,10 +1,17 @@
 package com.busbooking.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class PassengerRequest {
 	
+	@NotBlank
 	private String name;
+	@NotNull
     private int age;
+	@NotBlank
     private String gender;
+	@NotNull
     private Long seatId;
 	public String getName() {
 		return name;

@@ -23,6 +23,8 @@ public class ScheduleMapper {
         schedule.setJourneyDate(request.getJourneyDate());
         schedule.setDepartureTime(request.getDepartureTime());
         schedule.setArrivalTime(request.getArrivalTime());
+        schedule.setTotalSeats(bus.getTotalSeats());
+        schedule.setAvailableSeats(bus.getTotalSeats());
         schedule.setCreatedAt(LocalDateTime.now());
         schedule.setCreatedBy("ADMIN");
         return schedule;

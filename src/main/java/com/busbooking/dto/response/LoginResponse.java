@@ -19,7 +19,7 @@ public class LoginResponse {
         this.message = message;
     }
 
-    // getters & setters
+   
     public String getMessage() {
         return message;
     }

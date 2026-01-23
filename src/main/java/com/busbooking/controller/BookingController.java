@@ -12,6 +12,8 @@ import com.busbooking.dto.request.BookingRequest;
 import com.busbooking.dto.response.BookingResponse;
 import com.busbooking.service.BookingService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
@@ -19,12 +21,11 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    // ================= USER + ADMIN =================
-
+    
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(
-            @RequestBody BookingRequest request,Principal principal) {
+            @RequestBody @Valid BookingRequest request,Principal principal) {
 
         return ResponseEntity.ok(
                 bookingService.createBooking(request, principal.getName()) 
@@ -51,7 +52,7 @@ public class BookingController {
         );
     }
 
-    // ================= ADMIN ONLY =================
+    
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping

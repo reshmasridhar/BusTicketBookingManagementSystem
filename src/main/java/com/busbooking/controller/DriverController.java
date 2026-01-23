@@ -13,6 +13,8 @@ import com.busbooking.dto.response.DriverResponse;
 import com.busbooking.dto.response.GenericResponse;
 import com.busbooking.service.DriverService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/admin/drivers")
 @PreAuthorize("hasRole('ADMIN')")
@@ -21,23 +23,21 @@ public class DriverController {
     @Autowired
     private DriverService driverService;
 
-    // ================= CREATE =================
     @PostMapping
     public ResponseEntity<DriverResponse> createDriver(
-            @RequestBody DriverRequest request) {
+            @RequestBody @Valid DriverRequest request) {
 
         return new ResponseEntity<>(
                 driverService.createDriver(request),
                 HttpStatus.CREATED);
     }
 
-    // ================= GET ALL =================
     @GetMapping
     public ResponseEntity<List<DriverResponse>> getAllDrivers() {
         return ResponseEntity.ok(driverService.getAllDrivers());
     }
 
-    // ================= GET BY ID =================
+   
     @GetMapping("/{driverId}")
     public ResponseEntity<DriverResponse> getDriverById(
             @PathVariable Long driverId) {
@@ -46,7 +46,7 @@ public class DriverController {
                 driverService.getDriverById(driverId));
     }
 
-    // ================= GET BY LICENSE =================
+   
     @GetMapping("/license/{licenseNumber}")
     public ResponseEntity<DriverResponse> getByLicense(
             @PathVariable String licenseNumber) {
@@ -55,7 +55,7 @@ public class DriverController {
                 driverService.getDriverByLicenseNumber(licenseNumber));
     }
 
-    // ================= GET BY PHONE =================
+  
     @GetMapping("/phone/{phoneNumber}")
     public ResponseEntity<DriverResponse> getByPhone(
             @PathVariable String phoneNumber) {
@@ -64,17 +64,16 @@ public class DriverController {
                 driverService.getDriverByPhoneNumber(phoneNumber));
     }
 
-    // ================= UPDATE =================
     @PutMapping("/{driverId}")
     public ResponseEntity<DriverResponse> updateDriver(
             @PathVariable Long driverId,
-            @RequestBody DriverRequest request) {
+            @RequestBody @Valid DriverRequest request) {
 
         return ResponseEntity.ok(
                 driverService.updateDriver(driverId, request));
     }
 
-    // ================= DELETE =================
+   
     @DeleteMapping("/{driverId}")
     public ResponseEntity<GenericResponse> deleteDriver(
             @PathVariable Long driverId) {

@@ -13,7 +13,6 @@ public class DriverRequest {
     @NotBlank
     private String phoneNumber;
 
-    // getters & setters
 
     public String getName() {
         return name;

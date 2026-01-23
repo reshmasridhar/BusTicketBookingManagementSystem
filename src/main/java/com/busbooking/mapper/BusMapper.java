@@ -18,7 +18,7 @@ public class BusMapper {
         response.setBusName(bus.getBusName());
         response.setBusType(bus.getBusType());
         response.setTotalSeats(bus.getTotalSeats());
-        response.setAvailableSeats(bus.getAvailableSeats());
+        //response.setAvailableSeats(bus.getAvailableSeats());
         response.setCreatedBy(bus.getCreatedBy());
         response.setCreatedAt(bus.getCreatedAt());
 

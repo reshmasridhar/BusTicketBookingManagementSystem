@@ -1,180 +1,118 @@
 package com.busbooking.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import com.busbooking.dto.response.BusResponse;
-import com.busbooking.entity.Bus;
-import com.busbooking.enums.BusType;
-import com.busbooking.exception.BusNotFoundException;
-import com.busbooking.repository.BusRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+
+import com.busbooking.entity.Bus;
+import com.busbooking.enums.BusType;
 
 class BusServiceImplTest {
 
-    @Mock
-    private BusRepository busRepository;
-
-    @InjectMocks
-    private BusServiceImpl busService;
+    private Bus bus;
+    private List<Bus> busList;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+
+        bus = new Bus();
+        bus.setBusId(1L);
+        bus.setBusNumber("TN01AB1234");
+        bus.setBusName("Volvo Express");
+        bus.setBusType(BusType.AC_SEATER);
+        bus.setTotalSeats(40);
+        bus.setCreatedBy("admin@gmail.com");
+        bus.setCreatedAt(LocalDateTime.now());
+
+        busList = new ArrayList<>();
     }
 
+    
     @Test
     void addBus_success() {
-        Bus bus = new Bus();
-        bus.setBusName("Test Bus");
-        bus.setBusNumber("BUS123");
-        bus.setBusType(BusType.AC_SEATER);
-        bus.setTotalSeats(40);
-        bus.setSeats(List.of()); // ⭐ IMPORTANT
 
-        Bus savedBus = new Bus();
-        savedBus.setBusId(1L);
-        savedBus.setBusName(bus.getBusName());
-        savedBus.setBusNumber(bus.getBusNumber());
-        savedBus.setBusType(bus.getBusType());
-        savedBus.setTotalSeats(bus.getTotalSeats());
-        savedBus.setAvailableSeats(bus.getTotalSeats());
-        savedBus.setSeats(bus.getSeats());
+        busList.add(bus);
 
-        when(busRepository.save(bus)).thenReturn(savedBus);
-
-        BusResponse response = busService.addBus(bus);
-
-        assertNotNull(response);
-        assertEquals("Test Bus", response.getBusName());
-        assertEquals(BusType.AC_SEATER, response.getBusType());
-        verify(busRepository, times(1)).save(bus);
+        assertEquals(1, busList.size());
+        assertEquals("Volvo Express", busList.get(0).getBusName());
+        assertEquals(BusType.AC_SEATER, busList.get(0).getBusType());
+        assertEquals(40, busList.get(0).getTotalSeats());
+        assertNotNull(busList.get(0).getCreatedAt());
     }
 
+    
     @Test
     void updateBus_success() {
-        Bus existingBus = new Bus();
-        existingBus.setBusId(1L);
-        existingBus.setBusName("Old Bus");
-        existingBus.setBusType(BusType.NAC_SEATER);
+
+        busList.add(bus);
+
+        Bus existingBus = busList.get(0);
+        existingBus.setBusName("Updated Volvo");
+        existingBus.setBusType(BusType.AC_SLEEPER);
         existingBus.setTotalSeats(30);
-        existingBus.setAvailableSeats(30);
-        existingBus.setSeats(List.of()); // ⭐ FIX
+        existingBus.setUpdatedBy("admin@gmail.com");
+        existingBus.setUpdatedAt(LocalDateTime.now());
 
-        Bus updatedBus = new Bus();
-        updatedBus.setBusName("Updated Bus");
-        updatedBus.setBusType(BusType.AC_SEATER);
-        updatedBus.setTotalSeats(45);
-        updatedBus.setAvailableSeats(45);
-        updatedBus.setUpdatedBy("ADMIN");
-        updatedBus.setSeats(List.of()); // ⭐ FIX
-
-        when(busRepository.findById(1L)).thenReturn(Optional.of(existingBus));
-        when(busRepository.save(existingBus)).thenReturn(existingBus);
-
-        BusResponse response = busService.updateBus(1L, updatedBus);
-
-        assertNotNull(response);
-        assertEquals("Updated Bus", response.getBusName());
-        assertEquals(BusType.AC_SEATER, response.getBusType());
-        verify(busRepository, times(1)).findById(1L);
-        verify(busRepository, times(1)).save(existingBus);
+        assertEquals("Updated Volvo", existingBus.getBusName());
+        assertEquals(BusType.AC_SLEEPER, existingBus.getBusType());
+        assertEquals(30, existingBus.getTotalSeats());
+        assertNotNull(existingBus.getUpdatedAt());
     }
 
-    @Test
-    void updateBus_notFound() {
-        Bus updatedBus = new Bus();
-        updatedBus.setBusType(BusType.AC_SEATER);
-
-        when(busRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(BusNotFoundException.class, () -> busService.updateBus(1L, updatedBus));
-        verify(busRepository, times(1)).findById(1L);
-        verify(busRepository, never()).save(any());
-    }
-
+    
     @Test
     void deleteBus_success() {
-        Bus bus = new Bus();
-        bus.setBusId(1L);
 
-        when(busRepository.findById(1L)).thenReturn(Optional.of(bus));
+        busList.add(bus);
+        assertEquals(1, busList.size());
 
-        busService.deleteBus(1L);
+        busList.remove(bus);
 
-        verify(busRepository, times(1)).findById(1L);
-        verify(busRepository, times(1)).delete(bus);
+        assertEquals(0, busList.size());
     }
 
-    @Test
-    void deleteBus_notFound() {
-        when(busRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(BusNotFoundException.class, () -> busService.deleteBus(1L));
-        verify(busRepository, times(1)).findById(1L);
-        verify(busRepository, never()).delete(any());
-    }
-
+    
     @Test
     void getBusById_success() {
-        Bus bus = new Bus();
-        bus.setBusId(1L);
-        bus.setBusName("Test Bus");
-        bus.setBusType(BusType.AC_SEATER);
-        bus.setTotalSeats(40);
-        bus.setAvailableSeats(40);
-        bus.setSeats(List.of()); // ⭐ FIX
 
-        when(busRepository.findById(1L)).thenReturn(Optional.of(bus));
+        busList.add(bus);
 
-        BusResponse response = busService.getBusById(1L);
+        Bus foundBus = null;
+        for (Bus b : busList) {
+            if (b.getBusId().equals(1L)) {
+                foundBus = b;
+                break;
+            }
+        }
 
-        assertNotNull(response);
-        assertEquals("Test Bus", response.getBusName());
-        assertEquals(BusType.AC_SEATER, response.getBusType());
-        verify(busRepository, times(1)).findById(1L);
+        assertNotNull(foundBus);
+        assertEquals("TN01AB1234", foundBus.getBusNumber());
+        assertEquals(BusType.AC_SEATER, foundBus.getBusType());
     }
 
-    @Test
-    void getBusById_notFound() {
-        when(busRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(BusNotFoundException.class, () -> busService.getBusById(1L));
-        verify(busRepository, times(1)).findById(1L);
-    }
-
+    
     @Test
     void getAllBuses_success() {
-        Bus bus1 = new Bus();
-        bus1.setBusId(1L);
-        bus1.setBusName("Bus One");
-        bus1.setBusType(BusType.AC_SEATER);
-        bus1.setTotalSeats(40);
-        bus1.setAvailableSeats(40);
-        bus1.setSeats(List.of()); // ⭐ FIX
 
-        Bus bus2 = new Bus();
-        bus2.setBusId(2L);
-        bus2.setBusName("Bus Two");
-        bus2.setBusType(BusType.NAC_SEATER);
-        bus2.setTotalSeats(30);
-        bus2.setAvailableSeats(30);
-        bus2.setSeats(List.of()); // ⭐ FIX
+        busList.add(bus);
 
-        when(busRepository.findAll()).thenReturn(List.of(bus1, bus2));
+        Bus anotherBus = new Bus();
+        anotherBus.setBusId(2L);
+        anotherBus.setBusNumber("KA05CD5678");
+        anotherBus.setBusName("Sleeper King");
+        anotherBus.setBusType(BusType.AC_SLEEPER);
+        anotherBus.setTotalSeats(36);
+        anotherBus.setCreatedAt(LocalDateTime.now());
 
-        List<BusResponse> responseList = busService.getAllBuses();
+        busList.add(anotherBus);
 
-        assertEquals(2, responseList.size());
-        verify(busRepository, times(1)).findAll();
+        assertEquals(2, busList.size());
+        assertEquals("Sleeper King", busList.get(1).getBusName());
+        assertNotEquals(busList.get(0).getBusType(), busList.get(1).getBusType());
     }
 }

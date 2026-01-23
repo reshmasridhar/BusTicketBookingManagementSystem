@@ -17,7 +17,7 @@ public class ReviewRequest {
     @NotBlank
     private String review;
 
-    // getters & setters
+    
 
     public Long getBookingId() {
         return bookingId;

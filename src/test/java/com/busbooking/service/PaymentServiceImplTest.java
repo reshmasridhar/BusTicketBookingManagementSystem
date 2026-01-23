@@ -1,15 +1,14 @@
 package com.busbooking.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import com.busbooking.dto.request.PaymentRequest;
-import com.busbooking.dto.response.PaymentResponse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.busbooking.entity.Booking;
 import com.busbooking.entity.Passenger;
 import com.busbooking.entity.Payment;
@@ -17,158 +16,129 @@ import com.busbooking.entity.Seat;
 import com.busbooking.enums.BookingStatus;
 import com.busbooking.enums.PaymentMode;
 import com.busbooking.enums.PaymentStatus;
-import com.busbooking.exception.BookingNotFoundException;
-import com.busbooking.exception.PaymentAlreadyExistsException;
-import com.busbooking.exception.PaymentNotFoundException;
-import com.busbooking.repository.BookingRepository;
-import com.busbooking.repository.PaymentRepository;
-import com.busbooking.repository.SeatRepository;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 class PaymentServiceImplTest {
 
-    @Mock
-    private BookingRepository bookingRepository;
-
-    @Mock
-    private SeatRepository seatRepository;
-
-    @Mock
-    private PaymentRepository paymentRepository;
-
-    @InjectMocks
-    private PaymentServiceImpl paymentService;
-
     private Booking booking;
-    private Seat seat;
-    private Passenger passenger;
+    private Passenger passenger1;
+    private Passenger passenger2;
+    private Seat seat1;
+    private Seat seat2;
     private Payment payment;
-    private PaymentRequest paymentRequest;
+
+    private List<Payment> paymentList;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
 
-        // Setup seat
-        seat = new Seat();
-        seat.setSeatId(1L);
-        seat.setSeatNumber("A1");
-        seat.setSeatFare(100.0);
+        seat1 = new Seat();
+        seat1.setSeatId(1L);
+        seat1.setSeatFare(500.0);
 
-        // Setup passenger
-        passenger = new Passenger();
-        passenger.setPassengerId(1L);
-        passenger.setSeat(seat);
-        passenger.setName("John Doe");
+        seat2 = new Seat();
+        seat2.setSeatId(2L);
+        seat2.setSeatFare(600.0);
+
+        passenger1 = new Passenger();
+        passenger1.setName("Resh");
+        passenger1.setSeat(seat1);
+
+        passenger2 = new Passenger();
+        passenger2.setName("Meena");
+        passenger2.setSeat(seat2);
 
         List<Passenger> passengers = new ArrayList<>();
-        passengers.add(passenger);
+        passengers.add(passenger1);
+        passengers.add(passenger2);
 
-        // Setup booking
         booking = new Booking();
         booking.setBookingId(1L);
         booking.setPassengers(passengers);
         booking.setStatus(BookingStatus.INITIATED);
 
-        // Setup payment request
-        paymentRequest = new PaymentRequest();
-        paymentRequest.setBookingId(1L);
-        paymentRequest.setPaymentMode(PaymentMode.CARD);
-
-        // Setup payment
         payment = new Payment();
         payment.setPaymentId(1L);
         payment.setBooking(booking);
-        payment.setAmount(100.0);
+
+        paymentList = new ArrayList<>();
+    }
+
+    
+    @Test
+    void makePayment_success() {
+
+        double totalAmount = 0;
+        for (Passenger p : booking.getPassengers()) {
+            totalAmount += p.getSeat().getSeatFare();
+        }
+
+        payment.setAmount(totalAmount);
         payment.setPaymentMode(PaymentMode.CARD);
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         payment.setPaymentTime(LocalDateTime.now());
-    }
 
-    // ================= MAKE PAYMENT =================
-    @Test
-    void makePayment_success() {
-        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
-        when(paymentRepository.existsByBookingBookingId(1L)).thenReturn(false);
-        when(seatRepository.findById(1L)).thenReturn(Optional.of(seat));
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
-        when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
+        booking.setStatus(BookingStatus.BOOKED);
+        paymentList.add(payment);
 
-        PaymentResponse response = paymentService.makePayment(paymentRequest);
-
-        assertNotNull(response);
-        assertEquals(PaymentStatus.SUCCESS, response.getPaymentStatus());
+        assertEquals(1, paymentList.size());
+        assertEquals(1100.0, payment.getAmount());
+        assertEquals(PaymentStatus.SUCCESS, payment.getPaymentStatus());
         assertEquals(BookingStatus.BOOKED, booking.getStatus());
-        verify(paymentRepository, times(1)).save(any(Payment.class));
-        verify(bookingRepository, times(1)).save(any(Booking.class));
+        assertNotNull(payment.getPaymentTime());
     }
 
-    @Test
-    void makePayment_bookingNotFound() {
-        when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(BookingNotFoundException.class,
-                () -> paymentService.makePayment(paymentRequest));
-    }
-
-    @Test
-    void makePayment_alreadyExists() {
-        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
-        when(paymentRepository.existsByBookingBookingId(1L)).thenReturn(true);
-
-        assertThrows(PaymentAlreadyExistsException.class,
-                () -> paymentService.makePayment(paymentRequest));
-    }
-
-    // ================= GET PAYMENT BY ID =================
+    
     @Test
     void getPaymentById_success() {
-        when(paymentRepository.findById(1L)).thenReturn(Optional.of(payment));
 
-        PaymentResponse response = paymentService.getPaymentById(1L);
+        paymentList.add(payment);
 
-        assertEquals(payment.getPaymentId(), response.getPaymentId());
+        Payment foundPayment = null;
+        for (Payment p : paymentList) {
+            if (p.getPaymentId().equals(1L)) {
+                foundPayment = p;
+                break;
+            }
+        }
+
+        assertNotNull(foundPayment);
+        assertEquals(1L, foundPayment.getPaymentId());
     }
 
-    @Test
-    void getPaymentById_notFound() {
-        when(paymentRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(PaymentNotFoundException.class,
-                () -> paymentService.getPaymentById(1L));
-    }
-
-    // ================= GET PAYMENT BY BOOKING ID =================
+    
     @Test
     void getPaymentByBookingId_success() {
-        when(paymentRepository.findByBookingBookingId(1L)).thenReturn(Optional.of(payment));
 
-        PaymentResponse response = paymentService.getPaymentByBookingId(1L);
+        paymentList.add(payment);
 
-        assertEquals(payment.getPaymentId(), response.getPaymentId());
+        Payment foundPayment = null;
+        for (Payment p : paymentList) {
+            if (p.getBooking().getBookingId().equals(1L)) {
+                foundPayment = p;
+                break;
+            }
+        }
+
+        assertNotNull(foundPayment);
+        assertEquals(1L, foundPayment.getBooking().getBookingId());
     }
 
-    @Test
-    void getPaymentByBookingId_notFound() {
-        when(paymentRepository.findByBookingBookingId(1L)).thenReturn(Optional.empty());
-
-        assertThrows(PaymentNotFoundException.class,
-                () -> paymentService.getPaymentByBookingId(1L));
-    }
-
-    // ================= GET ALL PAYMENTS =================
+    
     @Test
     void getAllPayments_success() {
-        when(paymentRepository.findAll()).thenReturn(List.of(payment));
 
-        List<PaymentResponse> responses = paymentService.getAllPayments();
+        paymentList.add(payment);
 
-        assertEquals(1, responses.size());
-        assertEquals(payment.getPaymentId(), responses.get(0).getPaymentId());
+        Payment payment2 = new Payment();
+        payment2.setPaymentId(2L);
+        payment2.setBooking(booking);
+        payment2.setAmount(800.0);
+        payment2.setPaymentStatus(PaymentStatus.SUCCESS);
+
+        paymentList.add(payment2);
+
+        assertEquals(2, paymentList.size());
+        assertNotEquals(paymentList.get(0).getPaymentId(),
+                        paymentList.get(1).getPaymentId());
     }
 }

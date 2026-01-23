@@ -17,6 +17,8 @@ import com.busbooking.dto.request.PaymentRequest;
 import com.busbooking.dto.response.PaymentResponse;
 import com.busbooking.service.PaymentService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
@@ -27,7 +29,7 @@ public class PaymentController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<PaymentResponse> makePayment(
-            @RequestBody PaymentRequest request) {
+            @RequestBody @Valid PaymentRequest request) {
 
         return new ResponseEntity<>(
                 paymentService.makePayment(request),

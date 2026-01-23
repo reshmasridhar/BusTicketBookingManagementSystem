@@ -20,25 +20,25 @@ import com.busbooking.dto.request.ScheduleRequest;
 import com.busbooking.dto.response.ScheduleResponse;
 import com.busbooking.service.ScheduleService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/admin/schedules")
 public class ScheduleController {
 
     @Autowired ScheduleService scheduleService;
 
-    // ================= CREATE =================
     
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ScheduleResponse> createSchedule(
-            @RequestBody ScheduleRequest request) {
+            @RequestBody @Valid ScheduleRequest request) {
 
         return new ResponseEntity<>(
                 scheduleService.createSchedule(request),
                 HttpStatus.CREATED);
     }
 
-    // ================= GET ALL =================
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<ScheduleResponse>> getAllSchedules() {
@@ -47,7 +47,6 @@ public class ScheduleController {
                 scheduleService.getAllSchedules());
     }
 
-    // ================= SEARCH =================
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/search")
     public ResponseEntity<List<ScheduleResponse>> searchSchedules(
@@ -60,7 +59,6 @@ public class ScheduleController {
                         source, destination, journeyDate));
     }
 
-    // ================= CANCEL =================
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{scheduleId}/cancel")
     public ResponseEntity<ScheduleResponse> cancelSchedule(
